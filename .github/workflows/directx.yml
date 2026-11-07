@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: Tag de la version ou du brouillon à tester
+        description: Tag de la version ou préversion à tester
         required: true
         type: string
   release:
