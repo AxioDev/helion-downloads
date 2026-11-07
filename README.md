@@ -6,4 +6,6 @@ Ouvre **HELION-Setup.exe** une fois. Ensuite, lance **HELION** depuis le Bureau 
 
 Au lancement, le jeu recherche les nouvelles versions. Il vérifie la signature du manifeste, télécharge le paquet et vérifie son empreinte. La mise à jour prend effet à la prochaine ouverture du jeu. Tu peux finir ton duel en cours.
 
-Pour rejoindre un ami, copie son invitation, ouvre le salon avec **F2** et choisis **Rejoindre avec le code copié**.
+Pour explorer ensemble, ouvrez le salon avec **F2**. L’hôte choisit **Explorer à deux**, puis **Copier l’invitation**. L’invité copie ce code et choisit **Rejoindre avec le code copié**. En vol, **Tab** change la destination entre Eos, Astéria, Nadir et ton ami. **J** commande la croisière.
+
+La version 0.18 utilise de nouvelles invitations. Les deux pilotes doivent avoir mis le jeu à jour avant de créer leur salon.
