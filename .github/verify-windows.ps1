@@ -28,7 +28,7 @@ New-Item (Split-Path $previousJournal) -ItemType Directory -Force | Out-Null
 Set-Content $previousJournal 'Journal du client portable'
 Invoke-WebRequest "$base/HELION-Setup.exe" -OutFile $setup
 $install = Start-Process $setup '--silent' -PassThru
-if (-not $install.WaitForExit(90000) -or $install.ExitCode -ne 0) { throw 'Échec de l’installation' }
+if (-not $install.WaitForExit(90000) -or $install.ExitCode -ne 0) { throw "Échec de l’installation" }
 if ((InstalledVersion) -ne $expected) { throw 'Version installée incorrecte' }
 if ((Get-Content $previousJournal) -ne 'Journal du client portable') { throw 'Ancien journal écrasé' }
 $shortcut = Join-Path ([Environment]::GetFolderPath('Programs')) 'HELION.lnk'
