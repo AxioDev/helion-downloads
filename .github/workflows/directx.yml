@@ -34,11 +34,11 @@ jobs:
           try {
             $end = (Get-Date).AddSeconds(235)
             do {
-              if ((Test-Path $log) -and (Select-String $log -Pattern 'Impossible de démarrer|Erreur interne' -Quiet)) { throw 'Initialisation graphique en échec' }
+              if ((Test-Path $log) -and (Select-String -LiteralPath $log -Pattern 'Impossible de démarrer|Erreur interne' -Quiet)) { throw 'Initialisation graphique en échec' }
               if ((Get-Date) -gt $end) { throw 'Délai du premier affichage dépassé' }
             } until ($game.WaitForExit(1000))
             if ($game.ExitCode -ne 0 -or -not (Test-Path $frame)) { throw 'Capture du salon absente' }
-            if (-not (Select-String $log -SimpleMatch 'Première image affichée' -Quiet)) { throw 'Aucune image présentée' }
+            if (-not (Select-String -LiteralPath $log -Pattern 'Première image affichée' -SimpleMatch -Quiet)) { throw 'Aucune image présentée' }
             Add-Type -AssemblyName System.Drawing
             $bitmap = [Drawing.Bitmap]::new($frame)
             try {
