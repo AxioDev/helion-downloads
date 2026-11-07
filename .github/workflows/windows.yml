@@ -1,0 +1,22 @@
+name: Installation et mise à jour Windows
+on:
+  workflow_dispatch:
+  release:
+    types: [published]
+permissions:
+  contents: read
+jobs:
+  installer:
+    runs-on: windows-2022
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Installer le jeu et vérifier sa mise à jour au prochain lancement
+        shell: pwsh
+        run: ./.github/verify-windows.ps1
+      - name: Journaux de diagnostic
+        if: failure()
+        shell: pwsh
+        run: |
+          Get-Content "$env:LOCALAPPDATA/HELION/demarrage.txt","$env:LOCALAPPDATA/velopack/velopack.log","$env:LOCALAPPDATA/HELION.Game/velopack.log" -ErrorAction SilentlyContinue | Select-Object -Last 140
+          exit 0
