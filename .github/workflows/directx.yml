@@ -1,0 +1,62 @@
+name: Ouverture du salon en DirectX 12
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Tag de la version ou du brouillon à tester
+        required: true
+        type: string
+  release:
+    types: [published]
+permissions:
+  contents: read
+jobs:
+  salon:
+    runs-on: windows-2022
+    timeout-minutes: 8
+    steps:
+      - name: Installer la version et présenter le salon avec DirectX 12
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ inputs.tag || github.event.release.tag_name }}
+          WGPU_BACKEND: dx12
+        run: |
+          $ErrorActionPreference = 'Stop'
+          if ($env:RELEASE_TAG -notmatch '^v[0-9]+\.[0-9]+\.[0-9]+$') { throw 'Tag invalide' }
+          gh release download $env:RELEASE_TAG -R AxioDev/helion-downloads -p HELION-Setup.exe -D $env:RUNNER_TEMP
+          if ($LASTEXITCODE) { throw 'Téléchargement impossible' }
+          $install = Start-Process "$env:RUNNER_TEMP/HELION-Setup.exe" '--silent' -PassThru
+          if (-not $install.WaitForExit(90000) -or $install.ExitCode -ne 0) { throw 'Installation impossible' }
+          $log = "$env:LOCALAPPDATA/HELION/demarrage.txt"
+          $frame = "$env:RUNNER_TEMP/salon.png"
+          $game = Start-Process "$env:LOCALAPPDATA/HELION.Game/current/HELION-Online.exe" "--online --auto-exit 2 --capture-on-exit `"$frame`"" -PassThru
+          try {
+            $end = (Get-Date).AddSeconds(235)
+            do {
+              if ((Test-Path $log) -and (Select-String $log -Pattern 'Impossible de démarrer|Erreur interne' -Quiet)) { throw 'Initialisation graphique en échec' }
+              if ((Get-Date) -gt $end) { throw 'Délai du premier affichage dépassé' }
+            } until ($game.WaitForExit(1000))
+            if ($game.ExitCode -ne 0 -or -not (Test-Path $frame)) { throw 'Capture du salon absente' }
+            if (-not (Select-String $log -SimpleMatch 'Première image affichée' -Quiet)) { throw 'Aucune image présentée' }
+            Add-Type -AssemblyName System.Drawing
+            $bitmap = [Drawing.Bitmap]::new($frame)
+            try {
+              $colors = [System.Collections.Generic.HashSet[int]]::new()
+              for ($x = 0; $x -lt $bitmap.Width; $x += 17) {
+                for ($y = 0; $y -lt $bitmap.Height; $y += 17) {
+                  [void]$colors.Add($bitmap.GetPixel($x,$y).ToArgb())
+                }
+              }
+              if ($colors.Count -lt 32) { throw 'Capture vide ou uniforme' }
+              Write-Output "Salon DirectX 12 affiché, $($bitmap.Width) × $($bitmap.Height), $($colors.Count) couleurs échantillonnées."
+            } finally { $bitmap.Dispose() }
+          } finally {
+            if (-not $game.HasExited) { $game.Kill() }
+            if (Test-Path $log) { Get-Content $log }
+          }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: salon-windows-directx
+          path: ${{ runner.temp }}/salon.png
+          retention-days: 7
